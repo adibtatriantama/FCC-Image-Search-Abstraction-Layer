@@ -26,7 +26,8 @@ export class SearchForImage
   ) {}
 
   async execute(request: QueryForImagesInput): Promise<SearchForImageResponse> {
-    let queryForImageResult: QueryForImagesResult;
+    let response: QueryForImagesResult;
+    const promises = [];
 
     const cacheResult =
       await this.imageSearchResultRepo.findImageSearchResultCache(request);
@@ -41,16 +42,26 @@ export class SearchForImage
         return left(new UnexpectedError());
       }
 
-      queryForImageResult = imageSearchServiceResult.getValue();
+      response = imageSearchServiceResult.getValue();
 
-      await this.imageSearchResultRepo.saveImageSearchResultCache(
-        request,
-        queryForImageResult,
+      promises.push(
+        this.imageSearchResultRepo.saveImageSearchResultCache(
+          request,
+          response,
+        ),
       );
     } else {
-      queryForImageResult = cacheResult.getValue();
+      response = cacheResult.getValue();
     }
 
+    promises.push(this.saveSearchHistory(request));
+
+    await Promise.all(promises);
+
+    return right(response.toDto());
+  }
+
+  private async saveSearchHistory(request: QueryForImagesInput) {
     const historyItem = HistoryItem.create({
       title: request.search,
       url: request.toUrl(),
@@ -58,7 +69,5 @@ export class SearchForImage
     });
 
     await this.historyItemRepo.saveHistoryItem(historyItem);
-
-    return right(queryForImageResult.toDto());
   }
 }
