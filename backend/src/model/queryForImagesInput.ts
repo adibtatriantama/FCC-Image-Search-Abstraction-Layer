@@ -1,4 +1,27 @@
-export type QueryForImagesInputSize = 'small' | 'medium' | 'large';
+export type QueryForImagesInputSize =
+  | 'icon'
+  | 'small'
+  | 'medium'
+  | 'large'
+  | 'xlarge'
+  | 'xxlarge'
+  | 'huge';
+
+export const formatImageSize = (size: string): QueryForImagesInputSize => {
+  switch (size) {
+    case 'icon':
+    case 'small':
+    case 'medium':
+    case 'large':
+    case 'xlarge':
+    case 'xxlarge':
+    case 'huge':
+      return size;
+
+    default:
+      return null;
+  }
+};
 
 export type QueryForImagesInputProps = {
   search: string;

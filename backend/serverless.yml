@@ -36,12 +36,17 @@ provider:
     CUSTOM_SEARCH_API_KEY: ${env:CUSTOM_SEARCH_API_KEY}
 
 functions:
-  # USER
-  check:
-    handler: src/useCase/check/handler.main
+  findRecentHistory:
+    handler: src/useCase/findRecentHistory/handler.main
     events:
       - httpApi:
-          path: /check
+          path: /history
+          method: get
+  searchForImage:
+    handler: src/useCase/searchForImage/handler.main
+    events:
+      - httpApi:
+          path: /search-image
           method: get
 
 resources:
