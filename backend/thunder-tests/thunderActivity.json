@@ -1,0 +1,51 @@
+[
+  {
+    "_id": "0fb72974-f393-440c-858e-5dfa5c9723ec",
+    "colId": "history",
+    "containerId": "",
+    "name": "Query for image",
+    "url": "{{BASE_URL}}/search-image?search=cat&limit=1&start=14&size=huge",
+    "method": "GET",
+    "sortNum": 0,
+    "created": "2022-06-20T07:58:56.478Z",
+    "modified": "2022-06-21T02:04:05.513Z",
+    "headers": [],
+    "params": [
+      {
+        "name": "search",
+        "value": "cat",
+        "isPath": false
+      },
+      {
+        "name": "limit",
+        "value": "1",
+        "isPath": false
+      },
+      {
+        "name": "start",
+        "value": "14",
+        "isPath": false
+      },
+      {
+        "name": "size",
+        "value": "huge",
+        "isPath": false
+      }
+    ],
+    "tests": []
+  },
+  {
+    "_id": "c8669a5e-c315-45f8-82d6-2d154b2c55f3",
+    "colId": "history",
+    "containerId": "",
+    "name": "Find recent history",
+    "url": "{{BASE_URL}}/history",
+    "method": "GET",
+    "sortNum": 0,
+    "created": "2022-06-20T08:02:16.013Z",
+    "modified": "2022-06-21T02:04:21.019Z",
+    "headers": [],
+    "params": [],
+    "tests": []
+  }
+]
