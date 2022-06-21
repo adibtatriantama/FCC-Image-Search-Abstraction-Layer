@@ -1,9 +1,5 @@
 import { APIGatewayProxyEvent, APIGatewayProxyHandler } from 'aws-lambda';
-import {
-  QueryForImagesInput,
-  QueryForImagesInputSize,
-  formatImageSize,
-} from 'src/model/queryForImagesInput';
+import { Query, formatImageSize } from 'src/model/query';
 import { DynamoDbHistoryItemRepo } from 'src/repo/impl/dynamoDbHistoryItemRepo';
 import { DynamoDbImageSearchResultRepo } from 'src/repo/impl/dynamoDbImageSearchResultRepo';
 import { GoogleImageSearchService } from 'src/service/impl/googleImageSearch.service';
@@ -34,14 +30,14 @@ export const main: APIGatewayProxyHandler = async (
   const parsedLimit = limit ? parseInt(limit) : null;
   const parsedStart = start ? parseInt(start) : null;
 
-  const request = QueryForImagesInput.create({
+  const query = Query.create({
     size: formatImageSize(size),
     limit: parsedLimit,
     start: parsedStart,
     search,
   });
 
-  const useCaseResponse = await useCase.execute(request);
+  const useCaseResponse = await useCase.execute(query);
 
   if (useCaseResponse.isRight()) {
     response = {

@@ -1,9 +1,9 @@
 import { DynamoDBClient } from '@aws-sdk/client-dynamodb';
 import { DynamoDBDocument } from '@aws-sdk/lib-dynamodb';
 import { Result } from 'src/core/result';
-import { QueryForImagesInput } from 'src/model/queryForImagesInput';
-import { QueryForImagesResult } from 'src/model/queryForImagesResult';
-import { ImageSearchResultRepo } from '../imageSearchResultRepo';
+import { Query } from 'src/model/query';
+import { Search } from 'src/model/search';
+import { SearchRepo } from '../searchRepo';
 
 const ONE_DAY_IN_SECONDS = 24 * 60 * 60;
 
@@ -12,10 +12,8 @@ const ddbclient = new DynamoDBClient({
 });
 const ddbDoc = DynamoDBDocument.from(ddbclient);
 
-export class DynamoDbImageSearchResultRepo implements ImageSearchResultRepo {
-  async findImageSearchResultCache(
-    query: QueryForImagesInput,
-  ): Promise<Result<QueryForImagesResult>> {
+export class DynamoDbImageSearchResultRepo implements SearchRepo {
+  async findSearchCache(query: Query): Promise<Result<Search>> {
     try {
       const getResult = await ddbDoc.get({
         TableName: process.env.TABLE_NAME,
@@ -31,7 +29,7 @@ export class DynamoDbImageSearchResultRepo implements ImageSearchResultRepo {
         return Result.fail('item is undefined');
       }
 
-      const searchResult = QueryForImagesResult.create(item);
+      const searchResult = Search.create(item);
 
       return Result.ok(searchResult);
     } catch (error) {
@@ -40,10 +38,7 @@ export class DynamoDbImageSearchResultRepo implements ImageSearchResultRepo {
     }
   }
 
-  async saveImageSearchResultCache(
-    query: QueryForImagesInput,
-    result: QueryForImagesResult,
-  ): Promise<Result<void>> {
+  async saveSearchCache(query: Query, search: Search): Promise<Result<void>> {
     try {
       await ddbDoc.put({
         TableName: process.env.TABLE_NAME,
@@ -51,7 +46,7 @@ export class DynamoDbImageSearchResultRepo implements ImageSearchResultRepo {
           PK: this.generatePK(query),
           SK: query.start.toString(),
           expireAt: Math.floor(Date.now() / 1000 + ONE_DAY_IN_SECONDS),
-          ...result.toDto(),
+          ...search.toDto(),
         },
       });
 
@@ -62,7 +57,7 @@ export class DynamoDbImageSearchResultRepo implements ImageSearchResultRepo {
     }
   }
 
-  private generatePK(query: QueryForImagesInput): string {
+  private generatePK(query: Query): string {
     return `CACHE-q#${query.search}#${query.size}#${query.limit}`;
   }
 }

@@ -1,4 +1,4 @@
-export type QueryForImagesInputSize =
+export type ImageSize =
   | 'icon'
   | 'small'
   | 'medium'
@@ -7,7 +7,7 @@ export type QueryForImagesInputSize =
   | 'xxlarge'
   | 'huge';
 
-export const formatImageSize = (size: string): QueryForImagesInputSize => {
+export const formatImageSize = (size: string): ImageSize => {
   switch (size) {
     case 'icon':
     case 'small':
@@ -23,19 +23,19 @@ export const formatImageSize = (size: string): QueryForImagesInputSize => {
   }
 };
 
-export type QueryForImagesInputProps = {
+export type QueryProps = {
   search: string;
   start: number;
   limit: number;
-  size: QueryForImagesInputSize;
+  size: ImageSize;
 };
 
-export type QueryForImagesInputDto = QueryForImagesInputProps;
+export type QueryDto = QueryProps;
 
-export class QueryForImagesInput {
-  private constructor(public readonly props: QueryForImagesInputProps) {}
+export class Query {
+  private constructor(public readonly props: QueryProps) {}
 
-  static create(props: Partial<QueryForImagesInputProps>): QueryForImagesInput {
+  static create(props: Partial<QueryProps>): Query {
     if (!props.search) {
       throw new Error('search is required');
     }
@@ -47,7 +47,7 @@ export class QueryForImagesInput {
       limit = 10;
     }
 
-    return new QueryForImagesInput({
+    return new Query({
       limit: limit,
       search: props.search,
       start: props.start || 1,
@@ -67,11 +67,11 @@ export class QueryForImagesInput {
     return this.props.limit;
   }
 
-  get size(): QueryForImagesInputSize {
+  get size(): ImageSize {
     return this.props.size;
   }
 
-  toDto(): QueryForImagesInputDto {
+  toDto(): QueryDto {
     return {
       search: this.search,
       start: this.start,
@@ -96,13 +96,13 @@ export class QueryForImagesInput {
   }
 
   private encodeQuery(url: string, params: Record<string, string>): string {
-    let queryUrl = url;
+    console.log(params);
+    let queryUrl = url + '/search-image?';
     for (const key in params) {
       if (params.hasOwnProperty(key)) {
         queryUrl += `${key}=${encodeURIComponent(params[key])}&`;
       }
-
-      return queryUrl.slice(0, -1);
     }
+    return queryUrl.slice(0, -1);
   }
 }

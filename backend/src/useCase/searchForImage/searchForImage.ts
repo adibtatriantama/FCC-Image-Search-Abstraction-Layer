@@ -2,35 +2,28 @@ import { Either, left, right } from 'src/core/either';
 import { UseCase } from 'src/core/useCase';
 import { UnexpectedError, UseCaseError } from 'src/core/useCaseError';
 import { HistoryItem } from 'src/model/historyItem';
-import { QueryForImagesInput } from 'src/model/queryForImagesInput';
-import {
-  QueryForImagesResult,
-  QueryForImagesResultDto,
-} from 'src/model/queryForImagesResult';
+import { Query } from 'src/model/query';
+import { Search, SearchDto } from 'src/model/search';
 import { HistoryItemRepo } from 'src/repo/historyItemRepo';
-import { ImageSearchResultRepo } from 'src/repo/imageSearchResultRepo';
+import { SearchRepo } from 'src/repo/searchRepo';
 import { ImageSearchService } from 'src/service/imageSearch.service';
 
-export type SearchForImageResponse = Either<
-  UseCaseError,
-  QueryForImagesResultDto
->;
+export type SearchForImageResponse = Either<UseCaseError, SearchDto>;
 
-export class SearchForImage
-  implements UseCase<QueryForImagesInput, SearchForImageResponse>
-{
+export class SearchForImage implements UseCase<Query, SearchForImageResponse> {
   constructor(
     private readonly historyItemRepo: HistoryItemRepo,
-    private readonly imageSearchResultRepo: ImageSearchResultRepo,
+    private readonly imageSearchResultRepo: SearchRepo,
     private readonly imageSearchService: ImageSearchService,
   ) {}
 
-  async execute(request: QueryForImagesInput): Promise<SearchForImageResponse> {
-    let response: QueryForImagesResult;
+  async execute(request: Query): Promise<SearchForImageResponse> {
+    let response: Search;
     const promises = [];
 
-    const cacheResult =
-      await this.imageSearchResultRepo.findImageSearchResultCache(request);
+    const cacheResult = await this.imageSearchResultRepo.findSearchCache(
+      request,
+    );
 
     if (cacheResult.isFailure) {
       const imageSearchServiceResult =
@@ -45,10 +38,7 @@ export class SearchForImage
       response = imageSearchServiceResult.getValue();
 
       promises.push(
-        this.imageSearchResultRepo.saveImageSearchResultCache(
-          request,
-          response,
-        ),
+        this.imageSearchResultRepo.saveSearchCache(request, response),
       );
     } else {
       response = cacheResult.getValue();
@@ -61,7 +51,7 @@ export class SearchForImage
     return right(response.toDto());
   }
 
-  private async saveSearchHistory(request: QueryForImagesInput) {
+  private async saveSearchHistory(request: Query) {
     const historyItem = HistoryItem.create({
       title: request.search,
       url: request.toUrl(),

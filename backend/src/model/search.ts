@@ -1,4 +1,4 @@
-export type QueryForImagesResultImage = {
+export type SearchItemImage = {
   url: string;
   height: number;
   width: number;
@@ -8,41 +8,39 @@ export type QueryForImagesResultImage = {
   thumbnailWidth: number;
 };
 
-export type QueryForImagesResultItem = {
+export type SearchItem = {
   title: string;
   url: string;
   mime: string;
   fileFormat: string;
-  image: QueryForImagesResultImage;
+  image: SearchItemImage;
 };
 
-export type QueryForImagesResultProps = {
-  items: QueryForImagesResultItem[];
+export type SearchProps = {
+  items: SearchItem[];
   navigations: {
     prev?: string;
     next?: string;
   };
 };
 
-export type QueryForImagesResultDto = QueryForImagesResultProps;
+export type SearchDto = SearchProps;
 
-export class QueryForImagesResult {
-  private constructor(public readonly props: QueryForImagesResultProps) {}
+export class Search {
+  private constructor(public readonly props: SearchProps) {}
 
-  static create(
-    props: Partial<QueryForImagesResultProps>,
-  ): QueryForImagesResult {
+  static create(props: Partial<SearchProps>): Search {
     if (!props.items) {
       throw new Error('Items is required');
     }
 
-    return new QueryForImagesResult({
+    return new Search({
       items: props.items,
       navigations: props.navigations || {},
     });
   }
 
-  get items(): QueryForImagesResultItem[] {
+  get items(): SearchItem[] {
     return this.props.items;
   }
 
@@ -50,7 +48,7 @@ export class QueryForImagesResult {
     return this.props.navigations;
   }
 
-  toDto(): QueryForImagesResultDto {
+  toDto(): SearchDto {
     return {
       items: this.items,
       navigations: this.navigations,

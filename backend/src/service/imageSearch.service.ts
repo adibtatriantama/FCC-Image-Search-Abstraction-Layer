@@ -1,9 +1,7 @@
 import { Result } from 'src/core/result';
-import { QueryForImagesInput } from 'src/model/queryForImagesInput';
-import { QueryForImagesResult } from 'src/model/queryForImagesResult';
+import { Query } from 'src/model/query';
+import { Search } from 'src/model/search';
 
 export interface ImageSearchService {
-  searchImage(
-    request: QueryForImagesInput,
-  ): Promise<Result<QueryForImagesResult>>;
+  searchImage(query: Query): Promise<Result<Search>>;
 }

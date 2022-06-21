@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { Result } from 'src/core/result';
-import { QueryForImagesInput } from 'src/model/queryForImagesInput';
-import { QueryForImagesResult } from 'src/model/queryForImagesResult';
+import { Query } from 'src/model/query';
+import { Search } from 'src/model/search';
 import { ImageSearchService } from '../imageSearch.service';
 
 type GoogleImageSearchResponseDto = {
@@ -37,9 +37,7 @@ type GoogleSearchImageDto = {
 };
 
 export class GoogleImageSearchService implements ImageSearchService {
-  async searchImage(
-    request: QueryForImagesInput,
-  ): Promise<Result<QueryForImagesResult>> {
+  async searchImage(query: Query): Promise<Result<Search>> {
     try {
       const response = await axios.get<GoogleImageSearchResponseDto>(
         'https://customsearch.googleapis.com/customsearch/v1',
@@ -47,18 +45,18 @@ export class GoogleImageSearchService implements ImageSearchService {
           params: {
             key: process.env.CUSTOM_SEARCH_API_KEY,
             cx: process.env.SEARCH_ENGINE_ID,
-            q: request.search,
+            q: query.search,
             searchType: 'image',
-            num: request.limit,
-            imgSize: request.size,
-            start: request.start,
+            num: query.limit,
+            imgSize: query.size,
+            start: query.start,
           },
         },
       );
 
       const data = response.data;
 
-      const imageResult = QueryForImagesResult.create({
+      const imageResult = Search.create({
         items: data.items.map((item) => {
           const image = item.image;
           return {
@@ -77,7 +75,7 @@ export class GoogleImageSearchService implements ImageSearchService {
             },
           };
         }),
-        navigations: this.generateNavigation(request),
+        navigations: this.generateNavigation(query),
       });
 
       return Result.ok(imageResult);
@@ -88,14 +86,14 @@ export class GoogleImageSearchService implements ImageSearchService {
     }
   }
 
-  private generateNavigation(request: QueryForImagesInput): {
+  private generateNavigation(request: Query): {
     prev?: string;
     next?: string;
   } {
     let prev: string;
 
     if (request.start - request.limit > 0) {
-      prev = QueryForImagesInput.create({
+      prev = Query.create({
         search: request.search,
         size: request.size,
         limit: request.limit,
@@ -103,7 +101,7 @@ export class GoogleImageSearchService implements ImageSearchService {
       }).toUrl();
     }
 
-    const next = QueryForImagesInput.create({
+    const next = Query.create({
       search: request.search,
       size: request.size,
       limit: request.limit,

@@ -1,14 +1,14 @@
 import { HistoryItemRepo } from 'src/repo/historyItemRepo';
-import { ImageSearchResultRepo } from 'src/repo/imageSearchResultRepo';
+import { SearchRepo } from 'src/repo/searchRepo';
 import { ImageSearchService } from 'src/service/imageSearch.service';
 import { SearchForImage } from './searchForImage';
 import { Result } from 'src/core/result';
-import { QueryForImagesInput } from 'src/model/queryForImagesInput';
-import { QueryForImagesResult } from 'src/model/queryForImagesResult';
+import { Query } from 'src/model/query';
+import { Search } from 'src/model/search';
 import { UnexpectedError } from 'src/core/useCaseError';
 
 let useCase: SearchForImage;
-let mockImageSearchResultRepo: ImageSearchResultRepo;
+let mockImageSearchResultRepo: SearchRepo;
 let mockHistoryItemRepo: HistoryItemRepo;
 let mockImageSearchService: ImageSearchService;
 
@@ -17,7 +17,7 @@ afterEach(() => {
 });
 
 describe('SearchForImage', () => {
-  const dummyResult = QueryForImagesResult.create({
+  const dummyResult = Search.create({
     items: [
       {
         title: 'title',
@@ -53,10 +53,8 @@ describe('SearchForImage', () => {
     };
 
     mockImageSearchResultRepo = {
-      findImageSearchResultCache: jest
-        .fn()
-        .mockResolvedValue(Result.fail('not found')),
-      saveImageSearchResultCache: jest.fn(),
+      findSearchCache: jest.fn().mockResolvedValue(Result.fail('not found')),
+      saveSearchCache: jest.fn(),
     };
 
     useCase = new SearchForImage(
@@ -71,7 +69,7 @@ describe('SearchForImage', () => {
   });
 
   it('should return dto', async () => {
-    const request = QueryForImagesInput.create({ search: 'cat' });
+    const request = Query.create({ search: 'cat' });
 
     const response = await useCase.execute(request);
 
@@ -80,7 +78,7 @@ describe('SearchForImage', () => {
   });
 
   it('should save search history', async () => {
-    const request = QueryForImagesInput.create({ search: 'cat' });
+    const request = Query.create({ search: 'cat' });
 
     await useCase.execute(request);
 
@@ -99,10 +97,8 @@ describe('SearchForImage', () => {
       };
 
       mockImageSearchResultRepo = {
-        findImageSearchResultCache: jest
-          .fn()
-          .mockResolvedValue(Result.ok(dummyResult)),
-        saveImageSearchResultCache: jest.fn(),
+        findSearchCache: jest.fn().mockResolvedValue(Result.ok(dummyResult)),
+        saveSearchCache: jest.fn(),
       };
 
       useCase = new SearchForImage(
@@ -113,7 +109,7 @@ describe('SearchForImage', () => {
     });
 
     it('should load from cache instead using service', async () => {
-      const request = QueryForImagesInput.create({ search: 'cat' });
+      const request = Query.create({ search: 'cat' });
 
       const response = await useCase.execute(request);
 
@@ -124,11 +120,11 @@ describe('SearchForImage', () => {
 
   describe('when using ImageSearchService', () => {
     it('should save cache', async () => {
-      const request = QueryForImagesInput.create({ search: 'cat' });
+      const request = Query.create({ search: 'cat' });
 
       await useCase.execute(request);
 
-      expect(mockImageSearchResultRepo.saveImageSearchResultCache).toBeCalled();
+      expect(mockImageSearchResultRepo.saveSearchCache).toBeCalled();
     });
   });
 
@@ -144,10 +140,8 @@ describe('SearchForImage', () => {
       };
 
       mockImageSearchResultRepo = {
-        findImageSearchResultCache: jest
-          .fn()
-          .mockResolvedValue(Result.fail('not found')),
-        saveImageSearchResultCache: jest.fn(),
+        findSearchCache: jest.fn().mockResolvedValue(Result.fail('not found')),
+        saveSearchCache: jest.fn(),
       };
 
       useCase = new SearchForImage(
@@ -158,7 +152,7 @@ describe('SearchForImage', () => {
     });
 
     it('should return unexpected error', async () => {
-      const request = QueryForImagesInput.create({ search: 'cat' });
+      const request = Query.create({ search: 'cat' });
 
       const response = await useCase.execute(request);
 
