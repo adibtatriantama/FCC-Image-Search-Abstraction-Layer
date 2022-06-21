@@ -5,12 +5,8 @@
     "default": true,
     "sortNum": 10000,
     "created": "2022-06-21T02:00:51.502Z",
-    "modified": "2022-06-21T02:04:16.119Z",
-    "data": [
-      {
-        "name": "BASE_URL",
-        "value": "https://gpdo0mgvj9.execute-api.ap-southeast-1.amazonaws.com/"
-      }
-    ]
+    "modified": "2022-06-21T02:44:54.946Z",
+    "data": [],
+    "envFile": "../.env"
   }
 ]
