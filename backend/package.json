@@ -4,7 +4,8 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "format": "prettier --write \"src/**/*.ts\""
+    "format": "prettier --write \"src/**/*.ts\"",
+    "test": "jest"
   },
   "author": "Adibta Triantama <adibtatriantama@gmail.com>",
   "license": "MIT",
@@ -34,6 +35,7 @@
     "@aws-sdk/client-dynamodb": "3.110.0",
     "@aws-sdk/lib-dynamodb": "3.110.0",
     "aws-sdk": "2.1155.0",
+    "axios": "0.27.2",
     "ulid": "2.3.0"
   }
 }
