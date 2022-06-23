@@ -35,7 +35,7 @@ export class DynamoDbImageSearchResultRepo implements SearchRepo {
 
       return Result.ok(searchResult);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return Result.fail('Error happen');
     }
   }
@@ -54,7 +54,7 @@ export class DynamoDbImageSearchResultRepo implements SearchRepo {
 
       return Result.ok();
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return Result.fail('Error happen');
     }
   }

@@ -43,7 +43,7 @@ export class DynamoDbHistoryItemRepo implements HistoryItemRepo {
 
       return Result.ok(historyItems);
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return Result.fail('Error happen');
     }
   }
@@ -64,7 +64,7 @@ export class DynamoDbHistoryItemRepo implements HistoryItemRepo {
 
       return Result.ok();
     } catch (error) {
-      console.log(error);
+      console.error(error);
       return Result.fail('Error happen');
     }
   }
