@@ -96,7 +96,6 @@ export class Query {
   }
 
   private encodeQuery(url: string, params: Record<string, string>): string {
-    console.log(params);
     let queryUrl = url + '/search-image?';
     for (const key in params) {
       if (params.hasOwnProperty(key)) {
