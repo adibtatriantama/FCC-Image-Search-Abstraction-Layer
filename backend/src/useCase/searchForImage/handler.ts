@@ -3,7 +3,7 @@ import { Query, formatImageSize } from 'src/model/query';
 import { DynamoDbHistoryItemRepo } from 'src/repo/impl/dynamoDbHistoryItemRepo';
 import { DynamoDbImageSearchResultRepo } from 'src/repo/impl/dynamoDbImageSearchResultRepo';
 import { GoogleImageSearchService } from 'src/service/impl/googleImageSearch.service';
-import { SearchForImage } from './searchForImage';
+import { SearchForImage, TooManyRequestError } from './searchForImage';
 
 export const main: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent,
@@ -45,12 +45,24 @@ export const main: APIGatewayProxyHandler = async (
       body: JSON.stringify(useCaseResponse.value),
     };
   } else {
-    response = {
-      statusCode: 500,
-      body: JSON.stringify({
-        error: 'unexpected error',
-      }),
-    };
+    switch (useCaseResponse.value.constructor) {
+      case TooManyRequestError:
+        response = {
+          statusCode: 429,
+          body: JSON.stringify({
+            error: useCaseResponse.value.message,
+          }),
+        };
+        break;
+      default:
+        response = {
+          statusCode: 500,
+          body: JSON.stringify({
+            error: 'unexpected error',
+          }),
+        };
+        break;
+    }
   }
 
   return response;

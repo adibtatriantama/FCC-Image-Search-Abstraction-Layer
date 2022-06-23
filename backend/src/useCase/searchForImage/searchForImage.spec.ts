@@ -151,13 +151,12 @@ describe('SearchForImage', () => {
       );
     });
 
-    it('should return unexpected error', async () => {
+    it('should return error', async () => {
       const request = Query.create({ search: 'cat' });
 
       const response = await useCase.execute(request);
 
       expect(response.isLeft()).toBe(true);
-      expect(response.value.constructor).toBe(UnexpectedError);
     });
   });
 });

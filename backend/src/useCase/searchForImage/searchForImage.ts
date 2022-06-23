@@ -8,6 +8,12 @@ import { HistoryItemRepo } from 'src/repo/historyItemRepo';
 import { SearchRepo } from 'src/repo/searchRepo';
 import { ImageSearchService } from 'src/service/imageSearch.service';
 
+export class TooManyRequestError extends UseCaseError {
+  constructor() {
+    super('Too many request, please try again later');
+  }
+}
+
 export type SearchForImageResponse = Either<UseCaseError, SearchDto>;
 
 export class SearchForImage implements UseCase<Query, SearchForImageResponse> {
@@ -32,7 +38,7 @@ export class SearchForImage implements UseCase<Query, SearchForImageResponse> {
       if (imageSearchServiceResult.isFailure) {
         console.error(imageSearchServiceResult.getErrorValue());
 
-        return left(new UnexpectedError());
+        return left(new TooManyRequestError());
       }
 
       response = imageSearchServiceResult.getValue();
