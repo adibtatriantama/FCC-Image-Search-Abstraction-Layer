@@ -42,7 +42,7 @@ export class Query {
 
     let limit = props.limit || 10;
 
-    if (props.limit > 10 || props.limit < 1) {
+    if (limit > 10 || limit < 1) {
       console.warn(`Limit is out of range, setting to 10.`);
       limit = 10;
     }
