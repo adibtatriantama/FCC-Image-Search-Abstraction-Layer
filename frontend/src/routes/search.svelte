@@ -16,7 +16,7 @@
 	import { goto } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import Gallery from 'svelte-gallery';
-	import Modal from '$lib/Modal.svelte';
+	import Modal from '$lib/modal.svelte';
 
 	export let size: string;
 	export let term: string;
