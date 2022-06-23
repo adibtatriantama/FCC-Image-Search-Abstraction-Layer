@@ -10,7 +10,9 @@ const ONE_DAY_IN_SECONDS = 24 * 60 * 60;
 const ddbclient = new DynamoDBClient({
   region: process.env.APP_REGION,
 });
-const ddbDoc = DynamoDBDocument.from(ddbclient);
+const ddbDoc = DynamoDBDocument.from(ddbclient, {
+  marshallOptions: { removeUndefinedValues: true },
+});
 
 export class DynamoDbHistoryItemRepo implements HistoryItemRepo {
   async findRecentHistoryItems(): Promise<Result<HistoryItem[]>> {
