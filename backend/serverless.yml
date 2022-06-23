@@ -28,6 +28,11 @@ provider:
             - MainTable
             - Arn
 
+  httpApi:
+    cors:
+      allowedOrigins:
+        - https://adibta-fcc-image-search-abstraction-layer.vercel.app
+
   environment:
     TABLE_NAME:
       Ref: MainTable
