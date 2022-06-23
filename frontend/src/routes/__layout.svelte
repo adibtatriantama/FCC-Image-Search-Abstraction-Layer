@@ -3,6 +3,7 @@
     import { Modals, closeModal } from 'svelte-modals'
 </script>
 
+<slot />
 <Modals>
     <div
       slot="backdrop"
@@ -15,5 +16,4 @@
 	<title>Search Image</title>
 </svelte:head>
 
-<slot />
   
