@@ -8,6 +8,8 @@ import { SearchForImage, TooManyRequestError } from './searchForImage';
 export const main: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent,
 ) => {
+  process.env.BASE_URL = `https://${event.requestContext.domainName}`;
+
   let response;
 
   const { search, limit, size, start } = event.queryStringParameters;

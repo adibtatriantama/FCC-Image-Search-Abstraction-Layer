@@ -31,7 +31,6 @@ provider:
   environment:
     TABLE_NAME:
       Ref: MainTable
-    BASE_URL: ${env:BASE_URL}
     SEARCH_ENGINE_ID: ${env:SEARCH_ENGINE_ID}
     CUSTOM_SEARCH_API_KEY: ${env:CUSTOM_SEARCH_API_KEY}
 
