@@ -1,11 +1,15 @@
 import { HistoryItemRepo } from 'src/repo/historyItemRepo';
 import { SearchRepo } from 'src/repo/searchRepo';
 import { ImageSearchService } from 'src/service/imageSearch.service';
-import { SearchForImage } from './searchForImage';
+import {
+  ImageNotFoundError,
+  SearchForImage,
+  TooManyRequestError,
+} from './searchForImage';
 import { Result } from 'src/core/result';
 import { Query } from 'src/model/query';
 import { Search } from 'src/model/search';
-import { UnexpectedError } from 'src/core/useCaseError';
+import { NOT_FOUND, TOO_MANY_REQUEST } from 'src/constant';
 
 let useCase: SearchForImage;
 let mockImageSearchResultRepo: SearchRepo;
@@ -157,6 +161,52 @@ describe('SearchForImage', () => {
       const response = await useCase.execute(request);
 
       expect(response.isLeft()).toBe(true);
+    });
+
+    describe('when no image is found', () => {
+      beforeEach(() => {
+        mockImageSearchService = {
+          searchImage: jest.fn().mockResolvedValue(Result.fail(NOT_FOUND)),
+        };
+
+        useCase = new SearchForImage(
+          mockHistoryItemRepo,
+          mockImageSearchResultRepo,
+          mockImageSearchService,
+        );
+      });
+      it('should return no image is Found', async () => {
+        const request = Query.create({ search: 'cat' });
+
+        const response = await useCase.execute(request);
+
+        expect(response.isLeft()).toBe(true);
+        expect(response.value.constructor).toBe(ImageNotFoundError);
+      });
+    });
+
+    describe('when API Limit reached', () => {
+      beforeEach(() => {
+        mockImageSearchService = {
+          searchImage: jest
+            .fn()
+            .mockResolvedValue(Result.fail(TOO_MANY_REQUEST)),
+        };
+
+        useCase = new SearchForImage(
+          mockHistoryItemRepo,
+          mockImageSearchResultRepo,
+          mockImageSearchService,
+        );
+      });
+      it('should return too many request error', async () => {
+        const request = Query.create({ search: 'cat' });
+
+        const response = await useCase.execute(request);
+
+        expect(response.isLeft()).toBe(true);
+        expect(response.value.constructor).toBe(TooManyRequestError);
+      });
     });
   });
 });

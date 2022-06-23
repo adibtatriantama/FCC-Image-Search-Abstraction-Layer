@@ -1,3 +1,4 @@
+import { NOT_FOUND, TOO_MANY_REQUEST } from 'src/constant';
 import { Either, left, right } from 'src/core/either';
 import { UseCase } from 'src/core/useCase';
 import { UnexpectedError, UseCaseError } from 'src/core/useCaseError';
@@ -11,6 +12,12 @@ import { ImageSearchService } from 'src/service/imageSearch.service';
 export class TooManyRequestError extends UseCaseError {
   constructor() {
     super('Too many request, please try again later');
+  }
+}
+
+export class ImageNotFoundError extends UseCaseError {
+  constructor() {
+    super('No image found, please try another keyword');
   }
 }
 
@@ -36,9 +43,17 @@ export class SearchForImage implements UseCase<Query, SearchForImageResponse> {
         await this.imageSearchService.searchImage(request);
 
       if (imageSearchServiceResult.isFailure) {
-        console.error(imageSearchServiceResult.getErrorValue());
+        const error = imageSearchServiceResult.getErrorValue();
+        console.error(error);
 
-        return left(new TooManyRequestError());
+        switch (error) {
+          case NOT_FOUND:
+            return left(new ImageNotFoundError());
+          case TOO_MANY_REQUEST:
+            return left(new TooManyRequestError());
+          default:
+            return left(new UnexpectedError());
+        }
       }
 
       response = imageSearchServiceResult.getValue();

@@ -1,4 +1,5 @@
 import axios from 'axios';
+import { NOT_FOUND, TOO_MANY_REQUEST } from 'src/constant';
 import { Result } from 'src/core/result';
 import { Query } from 'src/model/query';
 import { Search } from 'src/model/search';
@@ -38,8 +39,10 @@ type GoogleSearchImageDto = {
 
 export class GoogleImageSearchService implements ImageSearchService {
   async searchImage(query: Query): Promise<Result<Search>> {
+    let response;
+    let data;
     try {
-      const response = await axios.get<GoogleImageSearchResponseDto>(
+      response = await axios.get<GoogleImageSearchResponseDto>(
         'https://customsearch.googleapis.com/customsearch/v1',
         {
           params: {
@@ -54,36 +57,45 @@ export class GoogleImageSearchService implements ImageSearchService {
         },
       );
 
-      const data = response.data;
+      data = response.data;
 
-      const imageResult = Search.create({
-        items: data.items.map((item) => {
-          const image = item.image;
-          return {
-            title: item.title,
-            url: item.link,
-            mime: item.mime,
-            fileFormat: item.fileFormat,
-            image: {
-              url: image.contextLink,
-              height: image.height,
-              width: image.width,
-              byteSize: image.byteSize,
-              thumbnailHeight: image.thumbnailHeight,
-              thumbnailUrl: image.thumbnailLink,
-              thumbnailWidth: image.thumbnailWidth,
-            },
-          };
-        }),
-        navigations: this.generateNavigation(query),
-      });
+      if (!data.items) {
+        throw new Error(NOT_FOUND);
+      }
+    } catch (err: any) {
+      if (err?.response?.status == 429) {
+        return Result.fail(TOO_MANY_REQUEST);
+      } else if (err?.message === NOT_FOUND) {
+        return Result.fail(NOT_FOUND);
+      }
 
-      return Result.ok(imageResult);
-    } catch (err) {
       console.error(err);
-
-      return Result.fail('Google image search error');
+      return Result.fail('api error');
     }
+
+    const imageResult = Search.create({
+      items: data.items.map((item) => {
+        const image = item.image;
+        return {
+          title: item.title,
+          url: item.link,
+          mime: item.mime,
+          fileFormat: item.fileFormat,
+          image: {
+            url: image.contextLink,
+            height: image.height,
+            width: image.width,
+            byteSize: image.byteSize,
+            thumbnailHeight: image.thumbnailHeight,
+            thumbnailUrl: image.thumbnailLink,
+            thumbnailWidth: image.thumbnailWidth,
+          },
+        };
+      }),
+      navigations: this.generateNavigation(query),
+    });
+
+    return Result.ok(imageResult);
   }
 
   private generateNavigation(request: Query): {

@@ -3,7 +3,11 @@ import { Query, formatImageSize } from 'src/model/query';
 import { DynamoDbHistoryItemRepo } from 'src/repo/impl/dynamoDbHistoryItemRepo';
 import { DynamoDbImageSearchResultRepo } from 'src/repo/impl/dynamoDbImageSearchResultRepo';
 import { GoogleImageSearchService } from 'src/service/impl/googleImageSearch.service';
-import { SearchForImage, TooManyRequestError } from './searchForImage';
+import {
+  ImageNotFoundError,
+  SearchForImage,
+  TooManyRequestError,
+} from './searchForImage';
 
 export const main: APIGatewayProxyHandler = async (
   event: APIGatewayProxyEvent,
@@ -56,11 +60,19 @@ export const main: APIGatewayProxyHandler = async (
           }),
         };
         break;
+      case ImageNotFoundError:
+        response = {
+          statusCode: 404,
+          body: JSON.stringify({
+            error: useCaseResponse.value.message,
+          }),
+        };
+        break;
       default:
         response = {
           statusCode: 500,
           body: JSON.stringify({
-            error: 'unexpected error',
+            error: useCaseResponse.value.message,
           }),
         };
         break;
