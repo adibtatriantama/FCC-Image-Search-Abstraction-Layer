@@ -5,6 +5,7 @@
   "main": "index.js",
   "scripts": {
     "format": "prettier --write \"src/**/*.ts\"",
+    "deploy:prod": "serverless deploy --stage=prod --verbose",
     "test": "jest"
   },
   "author": "Adibta Triantama <adibtatriantama@gmail.com>",
