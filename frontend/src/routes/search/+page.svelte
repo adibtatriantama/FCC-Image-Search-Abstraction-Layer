@@ -1,16 +1,3 @@
-<script context="module">
-	export function load({ url }) {
-		const term = url.searchParams.get('term');
-		const size = url.searchParams.get('size');
-		return {
-			props: {
-				term,
-				size
-			}
-		};
-	}
-</script>
-
 <script lang="ts">
 	import { openModal } from 'svelte-modals';
 	import { goto } from '$app/navigation';
@@ -18,8 +5,8 @@
 	import Gallery from 'svelte-gallery';
 	import Modal from '$lib/modal.svelte';
 
-	export let size: string;
-	export let term: string;
+	export let data;
+	let { size, term } = data;
 
 	let sizeNewInput: string = 'medium';
 	let termNewInput: string = '';
