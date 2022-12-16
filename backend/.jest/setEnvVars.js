@@ -1,1 +1,0 @@
-process.env.BASE_URL='https://test-domain.com'
