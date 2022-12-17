@@ -1,22 +1,31 @@
-import { type Either, right, left } from '$lib/server/core/either';
 import type { UseCase } from '$lib/server/core/useCase';
-import { type UseCaseError, UnexpectedError } from '$lib/server/core/useCaseError';
-import type { HistoryItemDto } from '$lib/server/model/historyItem';
-import type { HistoryItemRepo } from '$lib/server/repo/historyItemRepo';
+import type { SearchHistoryDto } from '$lib/dto/searchHistory.dto';
+import type { SearchHistoryRepo } from '$lib/server/repo/searchHistoryRepo';
+import { left, right, type Either } from '$lib/server/core/either';
+import { UseCaseError } from '$lib/server/core/useCaseError';
 
-export type FindRecentHistoryResponse = Either<UseCaseError, HistoryItemDto[]>;
+export type FindRecentHistoryResponse = Either<UseCaseError, SearchHistoryDto[]>;
+
+export class FindRecentHistoryError extends UseCaseError {
+	constructor(error: any) {
+		switch (error?.message) {
+			default:
+				console.error(error);
+				super('Unknown Error');
+		}
+	}
+}
 
 export class FindRecentHistory implements UseCase<void, FindRecentHistoryResponse> {
-	constructor(private readonly historyItemRepo: HistoryItemRepo) {}
+	constructor(private readonly searchHistoryRepo: SearchHistoryRepo) {}
 
 	async execute(): Promise<FindRecentHistoryResponse> {
-		const result = await this.historyItemRepo.findRecentHistoryItems();
+		try {
+			const histories = await this.searchHistoryRepo.findRecentSearchHistories('all');
 
-		if (result.isSuccess) {
-			const items = result.getValue();
-			return right(items.map((item) => item.toDto()));
-		} else {
-			return left(new UnexpectedError());
+			return right(histories);
+		} catch (error) {
+			return left(new FindRecentHistoryError(error));
 		}
 	}
 }

@@ -44,9 +44,7 @@
 		let response;
 		if (fetchCount < maxFetch) {
 			try {
-				response = await fetch(
-					`/api/search-image?search=${term}&size=${size}&start=${images.length}`
-				);
+				response = await fetch(`/api/search?term=${term}&size=${size}&start=${images.length}`);
 				handleResponse(await response.json());
 
 				if (isBottomPageReached()) {

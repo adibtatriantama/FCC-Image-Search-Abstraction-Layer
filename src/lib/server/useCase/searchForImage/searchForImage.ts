@@ -1,79 +1,90 @@
-import { NOT_FOUND, TOO_MANY_REQUEST } from '$lib/server/constant';
-import { type Either, left, right } from '$lib/server/core/either';
-import type { UseCase } from '$lib/server/core/useCase';
-import { UseCaseError, UnexpectedError } from '$lib/server/core/useCaseError';
-import { HistoryItem } from '$lib/server/model/historyItem';
-import type { Query } from '$lib/server/model/query';
-import type { SearchDto, Search } from '$lib/server/model/search';
-import type { HistoryItemRepo } from '$lib/server/repo/historyItemRepo';
-import type { SearchRepo } from '$lib/server/repo/searchRepo';
+import type { ImageRepo } from '$lib/server/repo/imageRepo';
 import type { ImageSearchService } from '$lib/server/service/imageSearch.service';
+import type { QueryDto } from '$lib/dto/query.dto';
+import type { ImageDto } from '$lib/dto/image.dto';
+import type { UseCase } from '$lib/server/core/useCase';
+import { UseCaseError } from '$lib/server/core/useCaseError';
+import { ERROR_NOT_FOUND, ERROR_TOO_MANY_REQUEST } from '$lib/server/constant';
+import type { SearchHistoryRepo } from '$lib/server/repo/searchHistoryRepo';
+import { left, right, type Either } from '$lib/server/core/either';
 
-export class TooManyRequestError extends UseCaseError {
-	constructor() {
-		super('Too many request, please try again later');
+export type SearchForImageResponse = Either<UseCaseError, ImageDto[]>;
+
+export class SearchForImageError extends UseCaseError {
+	constructor(error: any) {
+		switch (error?.message) {
+			case ERROR_NOT_FOUND:
+				super('No image found, please try another keyword');
+				break;
+			case ERROR_TOO_MANY_REQUEST:
+				super('Too many request, please try again later');
+				break;
+			default:
+				console.error(error);
+				super('Unknown Error');
+		}
 	}
 }
 
-export class ImageNotFoundError extends UseCaseError {
-	constructor() {
-		super('No image found, please try another keyword');
-	}
-}
-
-export type SearchForImageResponse = Either<UseCaseError, SearchDto>;
-
-export class SearchForImage implements UseCase<Query, SearchForImageResponse> {
+export class SearchForImage implements UseCase<QueryDto, SearchForImageResponse> {
 	constructor(
-		private readonly historyItemRepo: HistoryItemRepo,
-		private readonly imageSearchResultRepo: SearchRepo,
-		private readonly imageSearchService: ImageSearchService
+		private readonly imageSearchService: ImageSearchService,
+		private readonly imageRepo: ImageRepo,
+		private readonly searchHistoryRepo: SearchHistoryRepo
 	) {}
 
-	async execute(request: Query): Promise<SearchForImageResponse> {
-		let response: Search;
+	async execute(request: QueryDto): Promise<SearchForImageResponse> {
 		const promises = [];
 
-		const cacheResult = await this.imageSearchResultRepo.findSearchCache(request);
+		let images = await this.tryToSearchImagesInCache(request);
 
-		if (cacheResult.isFailure) {
-			const imageSearchServiceResult = await this.imageSearchService.searchImage(request);
-
-			if (imageSearchServiceResult.isFailure) {
-				const error = imageSearchServiceResult.getErrorValue();
-				console.error(error);
-
-				switch (error) {
-					case NOT_FOUND:
-						return left(new ImageNotFoundError());
-					case TOO_MANY_REQUEST:
-						return left(new TooManyRequestError());
-					default:
-						return left(new UnexpectedError());
-				}
+		if (!images) {
+			try {
+				images = await this.imageSearchService.searchImage(request);
+			} catch (error) {
+				return left(new SearchForImageError(error));
 			}
 
-			response = imageSearchServiceResult.getValue();
-
-			promises.push(this.imageSearchResultRepo.saveSearchCache(request, response));
-		} else {
-			response = cacheResult.getValue();
+			promises.push(this.tryToCacheImages(request, images));
 		}
 
-		promises.push(this.saveSearchHistory(request));
+		if (this.isQueryForFirstPage(request)) {
+			promises.push(this.tryToSaveSearchHistory(request));
+		}
 
 		await Promise.all(promises);
 
-		return right(response.toDto());
+		return right(images);
 	}
 
-	private async saveSearchHistory(request: Query) {
-		const historyItem = HistoryItem.create({
-			title: request.search,
-			url: request.toUrl(),
-			date: new Date()
-		});
+	private async tryToSearchImagesInCache(query: QueryDto): Promise<ImageDto[] | null> {
+		try {
+			return await this.imageRepo.findImages(query);
+		} catch (error) {
+			return null;
+		}
+	}
 
-		await this.historyItemRepo.saveHistoryItem(historyItem);
+	private async tryToCacheImages(query: QueryDto, images: ImageDto[]): Promise<void> {
+		try {
+			return await this.imageRepo.saveImages(query, images);
+		} catch (error) {
+			console.error(new Error('Unable to cache images', { cause: error }));
+		}
+	}
+
+	private isQueryForFirstPage(query: QueryDto): boolean {
+		return query.start === 1;
+	}
+
+	private async tryToSaveSearchHistory(query: QueryDto): Promise<void> {
+		try {
+			return await this.searchHistoryRepo.saveSearchHistory('all', {
+				term: query.term,
+				created: new Date()
+			});
+		} catch (error) {
+			console.error(new Error('Unable to save search history', { cause: error }));
+		}
 	}
 }

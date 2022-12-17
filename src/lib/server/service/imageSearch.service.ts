@@ -1,7 +1,6 @@
-import type { Result } from '../core/result';
-import type { Query } from '../model/query';
-import type { Search } from '../model/search';
+import type { ImageDto } from '../../dto/image.dto';
+import type { QueryDto } from '../../dto/query.dto';
 
 export interface ImageSearchService {
-	searchImage(query: Query): Promise<Result<Search>>;
+	searchImage(query: QueryDto): Promise<ImageDto[]>;
 }
